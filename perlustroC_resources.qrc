@@ -1,0 +1,8 @@
+<RCC>
+  <qresource>
+    <file alias=":/MainIcon">Images/icons8-temperature-48.png</file>
+    <file alias=":/Reload">Images/icons8-available-updates-64.png</file>
+    <file alias=":/Settings">Images/icons8-settings-64.png</file>
+    <file alias=":/Info">Images/icons8-info-64.png</file>
+  </qresource>
+</RCC>

@@ -1,0 +1,16 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[dev-packages]
+
+[packages]
+pyqtgraph = "*"
+pyupdater = "*"
+pyserial = "*"
+boltons = "*"
+cython = "*"
+
+[requires]
+python_version = "2.7"
