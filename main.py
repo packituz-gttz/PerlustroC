@@ -39,7 +39,8 @@ class MainWindow(Temperature.Ui_MainWindow, QMainWindow):
         self.label_usb = QLabel('USB Port:')
         self.celsius = unicode(u'°C')
 
-        self.dialog_settings = Settings.Settings(self.apply_settings, self, self.settings)
+        self.dialog_settings = Settings.Settings(self.apply_settings,
+                                                 self, self.settings)
         self.dialog_about = AboutDialog.AboutDialog(self, APP_VERSION)
 
         self.timer_updater = QTimer(self)
@@ -59,14 +60,23 @@ class MainWindow(Temperature.Ui_MainWindow, QMainWindow):
         self.actionInfo.triggered.connect(self.show_about)
 
     def load_save_settings(self):
-        self.settings = {'width': 2, 'color': 'blue', 'x_grid': True, 'y_grid': True, 'grid_opacity': 0.5}
+        self.settings = {'width': 2,
+                         'color': 'blue',
+                         'x_grid': True,
+                         'y_grid': True,
+                         'grid_opacity': 0.5}
         settings = QSettings()
 
-        self.settings['width'] = settings.value('width', self.settings.get('width')).toInt()[0]
-        self.settings['color'] = settings.value('color', self.settings.get('color')).toString()
-        self.settings['x_grid'] = settings.value('x_grid', self.settings.get('x_grid')).toBool()
-        self.settings['y_grid'] = settings.value('y_grid', self.settings.get('y_grid')).toBool()
-        self.settings['grid_opacity'] = settings.value('grid_opacity', self.settings.get('grid_opacity')).toFloat()[0]
+        self.settings['width'] = settings.value('width',
+                                                self.settings.get('width')).toInt()[0]
+        self.settings['color'] = settings.value('color',
+                                                self.settings.get('color')).toString()
+        self.settings['x_grid'] = settings.value('x_grid',
+                                                 self.settings.get('x_grid')).toBool()
+        self.settings['y_grid'] = settings.value('y_grid',
+                                                 self.settings.get('y_grid')).toBool()
+        self.settings['grid_opacity'] = settings.value('grid_opacity',
+                                                       self.settings.get('grid_opacity')).toFloat()[0]
 
     def show_settings(self):
         if not self.dialog_settings.isVisible():
@@ -90,10 +100,10 @@ class MainWindow(Temperature.Ui_MainWindow, QMainWindow):
         format_color = 'color: {0}; font: 36pt "Noto Sans";'.format(self.settings.get('color'))
         self.label_temp.setStyleSheet('QLabel {{{0}}} '.format(format_color))
 
-
     def create_plot(self):
         self.pen = pg.mkPen(width=self.settings.get('width'), color='y')
-        self.plotzone.plotItem.showGrid(self.settings.get('x_grid'), self.settings.get('y_grid'),
+        self.plotzone.plotItem.showGrid(self.settings.get('x_grid'),
+                                        self.settings.get('y_grid'),
                                         self.settings.get('grid_opacity'))
         self.plotzone.setXRange(0, 59)
         self.plotzone.setYRange(-100, 100)
@@ -105,8 +115,10 @@ class MainWindow(Temperature.Ui_MainWindow, QMainWindow):
         if str(self.button_start.text()) == '&Start':
             print('START')
             del self.array_values[:]
-            self.thread_arduino = ThreadArduino(self, self.combobox_usb.currentText(),
-                                                int(float(self.pinbox_alert.text())), self.checkbox_sound.isChecked())
+            self.thread_arduino = ThreadArduino(self,
+                                                self.combobox_usb.currentText(),
+                                                int(float(self.pinbox_alert.text())),
+                                                self.checkbox_sound.isChecked())
             self.thread_arduino.finished.connect(self.thread_stopped)
             self.thread_arduino.update_new_value.connect(self.update_temp_val)
             print(id(self.thread_arduino))
@@ -123,7 +135,6 @@ class MainWindow(Temperature.Ui_MainWindow, QMainWindow):
             start = time.time()
             convertFahrenheit.conv_all(self.array_values)
             print(time.time() - start)
-
 
     def thread_stopped(self):
         self.button_start.setEnabled(True)
@@ -151,7 +162,9 @@ class MainWindow(Temperature.Ui_MainWindow, QMainWindow):
         print(len(self.array_values))
 
     def update_plot(self):
-        self.plotzone.plot(self.list_x[:len(self.thread_arduino.dq_60)], list(self.thread_arduino.dq_60), clear=True, pen=self.pen)
+        self.plotzone.plot(self.list_x[:len(self.thread_arduino.dq_60)],
+                           list(self.thread_arduino.dq_60), clear=True,
+                           pen=self.pen)
 
     def closeEvent(self, QCloseEvent):
         settings = QSettings()
@@ -159,13 +172,15 @@ class MainWindow(Temperature.Ui_MainWindow, QMainWindow):
         settings.setValue('color', QVariant(self.settings['color']))
         settings.setValue('x_grid', QVariant(self.settings['x_grid']))
         settings.setValue('y_grid', QVariant(self.settings['y_grid']))
-        settings.setValue('grid_opacity', QVariant(self.settings['grid_opacity']))
+        settings.setValue('grid_opacity',
+                          QVariant(self.settings['grid_opacity']))
 
 
 class ThreadArduino(QThread):
     update_new_value = Signal(int)
 
-    def __init__(self, parent=None, device=None, temp_alert=None, sound_alert=False):
+    def __init__(self, parent=None, device=None, temp_alert=None,
+                 sound_alert=False):
         super(ThreadArduino, self).__init__(parent)
         self.keep_running = True
         self.dq_60 = deque(maxlen=60)
@@ -180,8 +195,8 @@ class ThreadArduino(QThread):
     def run(self):
         mutex.lock()
         try:
-
-            self.serial_connection = serial.Serial(self.device, 9600, timeout=4)
+            self.serial_connection = serial.Serial(self.device, 9600,
+                                                   timeout=4)
             while self.keep_running:
                 mutex.unlock()
                 try:
@@ -191,7 +206,8 @@ class ThreadArduino(QThread):
                         val_int = int(float(temp_val.split(';')[1]))
                         self.dq_60.appendleft(val_int)
                         self.update_new_value.emit(val_int)
-                        self.sound_test.check(self.sound_alert, self.temp_alert, val_int)
+                        self.sound_test.check(self.sound_alert,
+                                              self.temp_alert, val_int)
                         # if self.sound_alert:
                         #     if val_int > self.temp_alert:
                         #         print('\a')
@@ -206,6 +222,9 @@ class ThreadArduino(QThread):
 
 
 class SoundEnabled:
+    def __init__(self):
+        pass
+
     def check(self, sound_alert, temp_alert, val_int):
         if sound_alert:
             self.check = self.check_post_enabled
